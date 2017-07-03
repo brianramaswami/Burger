@@ -1,29 +1,46 @@
-// Import the ORM to create functions that will interact with the database.
-var orm = require("../config/orm.js");
+// File Dependencies
+// =============================================================
+var orm = require('./../config/orm.js');
 
-var cat = {
-  all: function(cb) {
-    orm.all("cats", function(res) {
-      cb(res);
-    });
-  },
-  // The variables cols and vals are arrays.
-  create: function(cols, vals, cb) {
-    orm.create("cats", cols, vals, function(res) {
-      cb(res);
-    });
-  },
-  update: function(objColVals, condition, cb) {
-    orm.update("cats", objColVals, condition, function(res) {
-      cb(res);
-    });
-  },
-  delete: function(condition, cb) {
-    orm.delete("cats", condition, function(res) {
-      cb(res);
-    });
-  }
+//creates the methods that will send the intended request for burgers.js to the orm.js which will preform the database action 
+module.exports = {
+    selectAll: (callback)=>{
+        //queries database via orm and preforms a callback
+        orm.read('burgers',(data)=>{
+            //returns the data to the callback function that was passed
+            callback(data);
+        });
+    },
+    insertOne: (burgerName,callback)=>{
+        //creating object with id and value for the database
+        var setParams = {
+            'burger_name': burgerName
+        };
+        
+        //queries database via orm, passes burgerName and preforms a callback
+        orm.create('burgers',setParams,(data)=>{
+            callback(data);
+        });
+    },
+    updateOne : (burgerID,boolean,callback)=>{
+        //Parameters to Set(key and value)
+        setParams = {
+            'devoured': boolean,
+        };
+        //Change the above parameters where id is equal matches burgerID
+        whereParams = {
+            'id': burgerID
+        };
+
+        //queries database burgers table via orm, passes burgerID, boolean, and preforms callback
+        orm.update('burgers',setParams,whereParams,(data)=>{
+            callback(data);
+        });
+    },
+    deleteTable: (callback)=>{
+        //queries database and deletes burgers table via orm and preforms callback
+        orm.delete('burgers',(data)=>{
+            callback(data);
+        });
+    }
 };
-
-// Export the database functions for the controller (catsController.js).
-module.exports = cat;

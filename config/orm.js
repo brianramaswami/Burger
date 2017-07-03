@@ -1,92 +1,43 @@
-// Import MySQL connection.
-var connection = require("../config/connection.js");
+// File Dependencies
+// =============================================================
+var db = require('./connections.js');
 
-// Helper function for SQL syntax.
-function printQuestionMarks(num) {
-  var arr = [];
-
-  for (var i = 0; i < num; i++) {
-    arr.push("?");
-  }
-
-  return arr.toString();
-}
-
-// Helper function for SQL syntax.
-function objToSql(ob) {
-  var arr = [];
-
-  for (var key in ob) {
-    if (Object.hasOwnProperty.call(ob, key)) {
-      arr.push(key + "=" + ob[key]);
+//Create exports object that contains all CRUD methods
+module.exports = {
+    //Queries the db table burgers, selects all data, and accepts a callback
+    read : (table,callback) => {
+        db.query('SELECT * FROM ' + table,(err,res)=>{
+            //If theres an error throw it out to user
+            if(err) throw err;
+            //takes the callback function and returns the response
+            callback(res);
+        });
+    },
+    //Queries the db table burgers, inserts new burger_name, and accepts a callback
+    create : (table,setParams, callback) => {
+        db.query('INSERT INTO '+ table + ' SET ?', setParams ,(err,res)=>{
+            //If theres an error throw it out to user
+            if(err) throw err;
+            //takes the callback function and returns the response
+            callback(res);
+        });
+    },
+    //Queries the db table burgers, updates the devoured boolean by ID, and accepts a callback
+    update : (table,setParams,whereParams,callback)=>{
+        db.query('UPDATE '+ table + ' SET ? WHERE ?',[setParams,whereParams], (err,res)=>{
+            //If theres an error throw it out to user
+            if(err) throw err;
+            //takes the callback function and returns the response
+            callback(res);
+        });
+    },
+    //Queries the db table burgers, deletes all data in table, restarts id count, and accepts a callback
+    delete : (table,callback)=>{
+        db.query('TRUNCATE table '+ table ,(err,res)=>{
+            //If theres an error throw it out to user
+            if(err) throw err;
+            //takes the callback function and returns the response
+            callback(res);
+        });
     }
-  }
-
-  return arr.toString();
-}
-
-// Object for all our SQL statement functions.
-var orm = {
-  all: function(tableInput, cb) {
-    var queryString = "SELECT * FROM " + tableInput + ";";
-    connection.query(queryString, function(err, result) {
-      if (err) {
-        throw err;
-      }
-      cb(result);
-    });
-  },
-  create: function(table, cols, vals, cb) {
-    var queryString = "INSERT INTO " + table;
-
-    queryString += " (";
-    queryString += cols.toString();
-    queryString += ") ";
-    queryString += "VALUES (";
-    queryString += printQuestionMarks(vals.length);
-    queryString += ") ";
-
-    console.log(queryString);
-
-    connection.query(queryString, vals, function(err, result) {
-      if (err) {
-        throw err;
-      }
-      cb(result);
-    });
-  },
-  // An example of objColVals would be {name: panther, sleepy: true}
-  update: function(table, objColVals, condition, cb) {
-    var queryString = "UPDATE " + table;
-
-    queryString += " SET ";
-    queryString += objToSql(objColVals);
-    queryString += " WHERE ";
-    queryString += condition;
-
-    console.log(queryString);
-    connection.query(queryString, function(err, result) {
-      if (err) {
-        throw err;
-      }
-
-      cb(result);
-    });
-  },
-  delete: function(table, condition, cb) {
-    var queryString = "DELETE FROM " + table;
-    queryString += " WHERE ";
-    queryString += condition;
-
-    connection.query(queryString, function(err, result) {
-      if (err) {
-        throw err;
-      }
-
-      cb(result);
-    });
-  }
 };
-
-// Export the orm object for the model (cat.js).
-module.exports = orm;
